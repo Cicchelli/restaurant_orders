@@ -1,6 +1,5 @@
 from typing import Dict, List
 
-from models.ingredient import Restriction, restriction_map
 from services.inventory_control import InventoryMapping
 from services.menu_data import MenuData
 
@@ -27,20 +26,29 @@ class MenuBuilder:
 
     # Req 4
     def get_main_menu(self, restriction=None) -> List[Dict]:
-        main_menu = []
-
-        for dish in self.menu_data.dishes:
-            if (
-                not restriction_map
-                or Restriction not in dish.get_restrictions()
-            ):
-                main_menu.append(
+        menu = []
+        dishes = self.menu_data.dishes
+        by_restriction = [
+            d for d in dishes if restriction not in d.get_restrictions()
+        ]
+        if restriction is None:
+            for dish in self.menu_data.dishes:
+                menu.append(
                     {
-                        "dish_name": dish.name,
-                        "ingredients": dish.get_ingredients(),
                         "price": dish.price,
+                        "ingredients": dish.get_ingredients(),
                         "restrictions": dish.get_restrictions(),
+                        "dish_name": dish.name,
                     }
                 )
-
-        return main_menu
+        else:
+            for dish in by_restriction:
+                menu.append(
+                    {
+                        "restrictions": dish.get_restrictions(),
+                        "dish_name": dish.name,
+                        "price": dish.price,
+                        "ingredients": dish.get_ingredients(),
+                    }
+                )
+        return menu
